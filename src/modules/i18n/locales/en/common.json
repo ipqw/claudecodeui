@@ -132,7 +132,8 @@
       "upload": "Upload Files",
       "refresh": "Refresh",
       "menuLabel": "File context menu",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "openInExplorer": "Show in Explorer"
     }
   },
   "projectWizard": {

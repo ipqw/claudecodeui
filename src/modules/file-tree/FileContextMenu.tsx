@@ -1,8 +1,9 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Download, FileText, FolderPlus, Pencil, RefreshCw, Trash2, Upload, type LucideIcon } from 'lucide-react';
+import { Copy, Download, FileText, FolderOpen, FolderPlus, Pencil, RefreshCw, Trash2, Upload, type LucideIcon } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
+import { launchOpenInExplorer, readOpenInExplorerEnabled } from '@/shared/openInExplorer';
 
 type FileContextItem = {
   name: string;
@@ -95,6 +96,17 @@ export default function FileContextMenu({
   }, [closeContextMenu]);
 
   const menuActions = useMemo<ContextMenuAction[]>(() => {
+    // Offered only where the user has installed the handler (see shared/openInExplorer).
+    // Read when the menu opens rather than subscribed to: every tree row mounts a menu.
+    const openInExplorerActions: ContextMenuAction[] = item && isMenuOpen && readOpenInExplorerEnabled()
+      ? [{
+        key: 'openInExplorer',
+        icon: FolderOpen,
+        label: t('fileTree.context.openInExplorer', 'Show in Explorer'),
+        onSelect: () => launchOpenInExplorer(item.path),
+      }]
+      : [];
+
     if (item?.type === 'file') {
       return [
         {
@@ -123,6 +135,7 @@ export default function FileContextMenu({
           label: t('fileTree.context.download', 'Download'),
           onSelect: () => onDownload?.(item),
         },
+        ...openInExplorerActions,
       ];
     }
 
@@ -173,6 +186,7 @@ export default function FileContextMenu({
           label: t('fileTree.context.download', 'Download'),
           onSelect: () => onDownload?.(item),
         },
+        ...openInExplorerActions,
       ];
     }
 
@@ -203,7 +217,7 @@ export default function FileContextMenu({
         showDividerBefore: true,
       },
     ];
-  }, [item, onCopyPath, onDelete, onDownload, onNewFile, onNewFolder, onRefresh, onRename, onUpload, t]);
+  }, [item, onCopyPath, onDelete, onDownload, onNewFile, onNewFolder, onRefresh, onRename, onUpload, isMenuOpen, t]);
 
   useEffect(() => {
     if (!isMenuOpen) {

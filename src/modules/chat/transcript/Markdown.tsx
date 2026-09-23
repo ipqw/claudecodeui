@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
+import { FolderOpen } from 'lucide-react';
 
 import { MermaidDiagram } from '@/modules/code-editor';
 import { MarkdownImage } from '@/modules/chat/transcript/MarkdownImage';
@@ -13,6 +14,7 @@ import { normalizeInlineCodeFences } from '@/modules/chat/utils/chatFormatting';
 import { copyTextToClipboard } from '@/shared/utils';
 import { SyntaxHighlighter } from '@/shared/syntaxHighlighter';
 import { usePaletteOps } from '@/modules/command-palette';
+import { useOpenInExplorerEnabled } from '@/shared/openInExplorer';
 import { buildSyntaxTheme } from '@/modules/chat/utils/syntaxHighlightTheme';
 import type { PrismStyleSheet } from '@/modules/chat/utils/syntaxHighlightTheme';
 
@@ -278,7 +280,9 @@ function MarkdownBodyRenderer({ children, breaks = false }: Omit<MarkdownProps, 
     [breaks, hasMath],
   );
   const rehypePlugins = useMemo(() => (hasMath ? [rehypeKatex] : EMPTY_PLUGINS), [hasMath]);
-  const { openFileInEditor, openDirectory } = usePaletteOps();
+  const { openFileInEditor, openDirectory, openInExplorer } = usePaletteOps();
+  const [openInExplorerEnabled] = useOpenInExplorerEnabled();
+  const { t } = useTranslation('chat');
 
   const components = useMemo(
     () => ({
@@ -290,7 +294,7 @@ function MarkdownBodyRenderer({ children, breaks = false }: Omit<MarkdownProps, 
         const fileRef = looksLikeFilePath(href) ? href : looksLikeFilePath(linkText) ? linkText : undefined;
 
         if (fileRef && !isExternalHref(href)) {
-          return (
+          const link = (
             <a
               href={href || fileRef}
               className="cursor-pointer text-blue-600 hover:underline dark:text-blue-400"
@@ -311,6 +315,27 @@ function MarkdownBodyRenderer({ children, breaks = false }: Omit<MarkdownProps, 
               {linkChildren}
             </a>
           );
+          if (!openInExplorerEnabled) {
+            return link;
+          }
+          const explorerLabel = t('fileLink.openInExplorer', 'Show in Explorer');
+          return (
+            <>
+              {link}
+              <button
+                type="button"
+                title={explorerLabel}
+                aria-label={explorerLabel}
+                className="ml-1 inline-flex translate-y-[2px] cursor-pointer items-center rounded text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const reference = stripLineSuffix(fileRef.trim());
+                  openInExplorer(reference);
+                }}
+              >
+                <FolderOpen className="h-3.5 w-3.5" />
+              </button>
+            </>
+          );
         }
 
         return (
@@ -325,7 +350,7 @@ function MarkdownBodyRenderer({ children, breaks = false }: Omit<MarkdownProps, 
         );
       },
     }),
-    [openFileInEditor, openDirectory],
+    [openFileInEditor, openDirectory, openInExplorer, openInExplorerEnabled, t],
   );
 
   return (

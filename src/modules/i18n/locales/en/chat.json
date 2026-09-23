@@ -355,5 +355,8 @@
     "tokensLabel_other": "tokens",
     "escClosesModal": "Esc closes the modal.",
     "close": "Close"
+  },
+  "fileLink": {
+    "openInExplorer": "Show in Explorer"
   }
 }

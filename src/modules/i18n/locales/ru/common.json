@@ -131,7 +131,8 @@
       "upload": "Загрузить файлы",
       "refresh": "Обновить",
       "menuLabel": "Контекстное меню файла",
-      "loading": "Загрузка..."
+      "loading": "Загрузка...",
+      "openInExplorer": "Показать в проводнике"
     }
   },
   "projectWizard": {

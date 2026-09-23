@@ -179,6 +179,15 @@
         "label": "Font Size",
         "description": "Editor font size in pixels"
       }
+    },
+    "openInExplorer": {
+      "title": "Show in Explorer",
+      "label": "Show files in this computer's file manager",
+      "description": "Adds \"Show in Explorer\" to file links in chat and to the file tree menu. Needs the handler installed on this computer; the switch applies to this browser only.",
+      "download": {
+        "windows": "Handler for Windows",
+        "linux": "Handler for Linux"
+      }
     }
   },
   "mcpForm": {

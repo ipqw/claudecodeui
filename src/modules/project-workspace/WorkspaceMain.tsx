@@ -10,6 +10,7 @@ import { usePaletteOpsRegister } from '@/modules/command-palette';
 import { TaskMasterPanel, useTaskMasterProjectSync, useTasksSettings } from '@/modules/task-master';
 import type { AppTab, DirectoryRevealRequest, Project, ProjectSession, SessionEstablishedContext, SessionNavigationOptions, SettingsMainTab } from '@/shared/types';
 import { useUiPreferences } from '@/shared/context/UiPreferencesContext';
+import { launchOpenInExplorer } from '@/shared/openInExplorer';
 import { useFileOpenResolver } from '@/modules/project-workspace/hooks/useFileOpenResolver';
 import { EditorSidebar, useEditorSidebar } from '@/modules/code-editor';
 import WorkspaceHeader from '@/modules/project-workspace/WorkspaceHeader';
@@ -124,9 +125,21 @@ function WorkspaceMain({
     setRevealDirectory({ path: directoryPath });
   }, [setActiveTab]);
 
+  // The handler on the user's machine maps absolute server paths only, so a
+  // bare chat reference is resolved against the file tree first and, failing
+  // that, taken as relative to the project root.
+  const projectRoot = selectedProject?.fullPath;
+  const launchResolved = useCallback((filePath: string) => {
+    const absolute = filePath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(filePath) || !projectRoot
+      ? filePath
+      : `${projectRoot.replace(/[\\/]+$/, '')}/${filePath.replace(/^\.\//, '')}`;
+    launchOpenInExplorer(absolute);
+  }, [projectRoot]);
+  const openInExplorer = useFileOpenResolver(selectedProject, launchResolved);
+
   // Stable arguments keep usePaletteOpsRegister's effect from tearing down and
   // rewriting the whole palette registry on every render.
-  usePaletteOpsRegister({ openFile, openFileInEditor, openDirectory });
+  usePaletteOpsRegister({ openFile, openFileInEditor, openDirectory, openInExplorer });
 
   if (isLoading) {
     return <WorkspaceStateView mode="loading" isMobile={isMobile} onMenuClick={onMenuClick} />;

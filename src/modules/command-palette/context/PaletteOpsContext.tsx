@@ -8,6 +8,9 @@ export type PaletteOps = {
   openFileInEditor: (path: string, line?: number | null) => void;
   // Directories cannot be read as text: they open in the file tree instead.
   openDirectory: (path: string) => void;
+  // Reveals a file or directory in the file manager of the user's own machine,
+  // resolving a chat reference to an absolute server path first.
+  openInExplorer: (path: string) => void;
   openSettings: (tab?: string) => void;
   refreshProjects: () => Promise<void> | void;
 };
@@ -20,6 +23,7 @@ const defaultOps: PaletteOps = {
   openFile: () => undefined,
   openFileInEditor: () => undefined,
   openDirectory: () => undefined,
+  openInExplorer: () => undefined,
   openSettings: () => undefined,
   refreshProjects: () => undefined,
 };
@@ -38,6 +42,7 @@ export function usePaletteOps(): PaletteOps {
       openFileInEditor: (path, line) =>
         (ref?.current.openFileInEditor ?? defaultOps.openFileInEditor)(path, line),
       openDirectory: (path) => (ref?.current.openDirectory ?? defaultOps.openDirectory)(path),
+      openInExplorer: (path) => (ref?.current.openInExplorer ?? defaultOps.openInExplorer)(path),
       openSettings: (tab) => (ref?.current.openSettings ?? defaultOps.openSettings)(tab),
       refreshProjects: () => (ref?.current.refreshProjects ?? defaultOps.refreshProjects)(),
     }),
@@ -47,7 +52,7 @@ export function usePaletteOps(): PaletteOps {
 
 export function usePaletteOpsRegister(partial: Partial<PaletteOps>) {
   const ref = useContext(PaletteOpsContext);
-  const { openFile, openFileInEditor, openDirectory, openSettings, refreshProjects } = partial;
+  const { openFile, openFileInEditor, openDirectory, openInExplorer, openSettings, refreshProjects } = partial;
 
   useEffect(() => {
     if (!ref) return undefined;
@@ -59,14 +64,16 @@ export function usePaletteOpsRegister(partial: Partial<PaletteOps>) {
     if (openFile) registry.openFile = openFile;
     if (openFileInEditor) registry.openFileInEditor = openFileInEditor;
     if (openDirectory) registry.openDirectory = openDirectory;
+    if (openInExplorer) registry.openInExplorer = openInExplorer;
     if (openSettings) registry.openSettings = openSettings;
     if (refreshProjects) registry.refreshProjects = refreshProjects;
     return () => {
       if (openFile && registry.openFile === openFile) registry.openFile = prev.openFile;
       if (openFileInEditor && registry.openFileInEditor === openFileInEditor) registry.openFileInEditor = prev.openFileInEditor;
       if (openDirectory && registry.openDirectory === openDirectory) registry.openDirectory = prev.openDirectory;
+      if (openInExplorer && registry.openInExplorer === openInExplorer) registry.openInExplorer = prev.openInExplorer;
       if (openSettings && registry.openSettings === openSettings) registry.openSettings = prev.openSettings;
       if (refreshProjects && registry.refreshProjects === refreshProjects) registry.refreshProjects = prev.refreshProjects;
     };
-  }, [ref, openFile, openFileInEditor, openDirectory, openSettings, refreshProjects]);
+  }, [ref, openFile, openFileInEditor, openDirectory, openInExplorer, openSettings, refreshProjects]);
 }
